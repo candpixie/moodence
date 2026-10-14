@@ -5,7 +5,7 @@
  * @module song
  */
 
-import type { ChordSpec, DegreePitch, Mode } from "./theory";
+import { degreeMidi, type ChordSpec, type DegreePitch, type Mode } from "./theory";
 
 export const STEPS_PER_BEAT = 4; // sixteenth notes
 export const BEATS_PER_BAR = 4;
@@ -40,6 +40,15 @@ export interface Song {
   lyrics: string;
   /** Pinned Cantonese readings for characters with more than one, e.g. `{ 一: "jat6" }`. */
   readings?: Record<string, string>;
+  /** Melody octave offset, kept by {@link transpose} so the melody never jumps. Default 0. */
+  octave?: number;
+  /** Guitar capo fret. Changes the chord names shown as shapes, never the sound. Default 0. */
+  capo?: number;
+}
+
+/** MIDI number of a melody note in a song, including the song's octave offset. */
+export function noteMidi(song: Pick<Song, "mode" | "tonic" | "octave">, note: DegreePitch): number {
+  return degreeMidi(note, song.mode, song.tonic) + 12 * (song.octave ?? 0);
 }
 
 /** Seconds per grid step at a tempo. */

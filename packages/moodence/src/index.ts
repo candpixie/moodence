@@ -11,3 +11,4 @@ export * from "./stats";
 export * from "./song";
 export * from "./tones";
 export * from "./midi";
+export * from "./transpose";

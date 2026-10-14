@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   STEPS_PER_BAR, STEPS_PER_BEAT, chordAt, chordMidi, chordPitchClasses, chordSymbol, degreeMidi,
-  degreeName, isBorrowed, placeChord, placeNote, romanLabel,
+  degreeName, isBorrowed, noteMidi, placeChord, placeNote, romanLabel, shapeTonic,
   type ChordEvent, type DegreePitch, type LyricAlignment, type NoteEvent, type Song,
 } from "moodence";
 import { ROWS, newId } from "../song";
@@ -72,7 +72,7 @@ export function Editor({ song, lyrics, guides, selection, playhead, onSelect, on
     return { step, row, x: e.clientX - rect.left };
   };
 
-  const sound = (p: DegreePitch) => void preview([degreeMidi(p, song.mode, song.tonic)]);
+  const sound = (p: DegreePitch) => void preview([noteMidi(song, p)]);
 
   // ---- melody grid
 
@@ -180,6 +180,10 @@ export function Editor({ song, lyrics, guides, selection, playhead, onSelect, on
   }
 
   const selectedChordId = selection?.kind === "chord" ? selection.id : null;
+  // With a capo, chord names show the shapes to play. Sound never changes.
+  const capo = song.capo ?? 0;
+  const nameTonic = shapeTonic(song.tonic, capo);
+  const chordName = (c: ChordEvent) => chordSymbol(c, song.mode, nameTonic);
 
   return (
     <div className="editor">
@@ -221,10 +225,10 @@ export function Editor({ song, lyrics, guides, selection, playhead, onSelect, on
                 data-chord={c.id}
                 className={`chord${isBorrowed(c, song.mode) ? " is-borrowed" : ""}${c.id === selectedChordId ? " is-selected" : ""}`}
                 style={{ left: c.start * CELL, width: c.len * CELL, ["--c" as string]: degVar(c.deg) }}
-                title={`${romanLabel(c, song.mode)} (${chordSymbol(c, song.mode, song.tonic)}). Drag the right edge to resize.`}
+                title={`${romanLabel(c, song.mode)} (${chordSymbol(c, song.mode, song.tonic)}${capo ? `, play ${chordName(c)} shape with capo ${capo}` : ""}). Drag the right edge to resize.`}
               >
                 <span className="chord-roman">{romanLabel(c, song.mode)}</span>
-                <span className="chord-symbol">{chordSymbol(c, song.mode, song.tonic)}</span>
+                <span className="chord-symbol">{chordName(c)}</span>
               </div>
             ))}
           </div>

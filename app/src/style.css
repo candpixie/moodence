@@ -220,3 +220,4 @@ a { color: inherit; }
 .fix-options button { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; padding: 5px 9px; }
 .fix-word { font: 500 15px var(--hk); }
 .fix-jyut { font-size: 11px; color: var(--muted); }
+.capo-note { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 2px; }

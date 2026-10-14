@@ -70,6 +70,7 @@ pnpm examples   # runs every script in examples/
 | `parse` | `parseChordSymbol`, `parseRoman` (incl. `V7/vi`, `vii°7/V`), `romanFromSymbol`, `splitProgression` |
 | `stats` | `estimateKey`, `romanize`, `countTransitions`, `nextChords` |
 | `tones` | `syllabify`, `checkTones`, `alignLyrics`, `suggestLyricFixes`, `applyLyricFix` (Cantonese, from cantojam) |
+| `transpose` | `transpose` (songs, no octave jumps), `transposeProgression` (chord sheets, re-spelled by key), `capoShapes`, `soundingChords` |
 | `midi` | `songToMidi` (melody + chord tracks, lyric meta events) |
 | `song` | The editor's JSON song model and editing helpers |
 
@@ -79,7 +80,8 @@ Conventions: pitch classes are `0..11` with C = 0. Chords are stored relative to
 
 `app/`, a Vite + React app built on the library.
 
-- Melody and chords in scale degrees. Changing the key transposes everything.
+- Melody and chords in scale degrees. Changing the key, or ▼/▲ (`[` / `]`), transposes everything.
+- Capo setting: chord names switch to the shapes to play, the sound stays the same.
 - Chord palette per key: diatonic, borrowed from the parallel mode, secondary dominants, sus and 7th colors.
 - Degree colors by stability: 1, 3, 5 warm, 2, 4, 6, 7 cool. Borrowed chords are hatched.
 - Melody guides tint the rows that are chord tones under each chord.
@@ -96,6 +98,7 @@ Every script in [`examples/`](examples) runs in CI.
 | `02-tone-check.mjs` | A melody that follows a Cantonese lyric's tones, and one that does not |
 | `03-export-midi.mjs` | Building a song from Roman numerals and writing a `.mid` |
 | `04-chordonomicon.mjs` | Next-chord statistics over the Chordonomicon dataset, optionally by genre |
+| `05-transpose-capo.mjs` | Transposing a chord sheet, and capo shapes vs. sounding chords |
 
 Output of `04-chordonomicon.mjs` on the full dataset (679,807 songs; 511,623 with key fit ≥ 0.8; 98.1% of chords parsed):
 

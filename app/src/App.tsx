@@ -5,7 +5,7 @@ import { LyricFixes } from "./components/LyricFixes";
 import { play, playheadStep, preview, stop } from "./audio";
 import {
   CORPUS, STEPS_PER_BAR, TONE_NAMES, alignLyrics, chordAt, chordMidi, clampToBars, isSong, keyName,
-  pitchName, placeChord, songToMidi, type ChordSpec, type Mode, type Song,
+  pitchName, placeChord, shapeTonic, songToMidi, transpose, type ChordSpec, type Mode, type Song,
 } from "moodence";
 import { demoSong, emptySong, loadStored, newId, store } from "./song";
 
@@ -64,6 +64,8 @@ export function App() {
   }, []);
 
   useEffect(() => store(song), [song]);
+  const songRef = useRef(song);
+  songRef.current = song;
 
   const lyrics = useMemo(() => alignLyrics(song, toneCheck), [song, toneCheck]);
 
@@ -138,7 +140,7 @@ export function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const typing = (e.target as HTMLElement).closest("input, textarea, select");
+      const typing = e.target instanceof Element && e.target.closest("input, textarea, select");
       if (typing) return;
       const mod = e.metaKey || e.ctrlKey;
       if (e.code === "Space") {
@@ -152,6 +154,8 @@ export function App() {
         redo();
       } else if (e.key === "Backspace" || e.key === "Delete") {
         deleteSelected();
+      } else if (e.key === "[" || e.key === "]") {
+        setSong(transpose(songRef.current, e.key === "]" ? 1 : -1));
       } else if (e.key === "Escape") {
         setSelection(null);
       }
@@ -195,7 +199,11 @@ export function App() {
           </button>
           <label className="field">
             <span>Key</span>
-            <select value={song.tonic} onChange={(e) => setSong({ ...song, tonic: Number(e.target.value) })}>
+            <select value={song.tonic} onChange={(e) => {
+              // Shortest way to the new key, so the melody moves at most a tritone.
+              const up = (((Number(e.target.value) - song.tonic) % 12) + 12) % 12;
+              setSong(transpose(song, up > 6 ? up - 12 : up));
+            }}>
               {Array.from({ length: 12 }, (_, pc) => (
                 <option key={pc} value={pc}>{pitchName(pc, pc, song.mode)}</option>
               ))}
@@ -203,6 +211,18 @@ export function App() {
             <select value={song.mode} onChange={(e) => setSong({ ...song, mode: e.target.value as Mode })}>
               <option value="major">major</option>
               <option value="minor">minor</option>
+            </select>
+          </label>
+          <div className="field">
+            <button type="button" aria-label="Transpose down a semitone" title="Transpose down a semitone ([)"
+              onClick={() => setSong(transpose(song, -1))}>▼</button>
+            <button type="button" aria-label="Transpose up a semitone" title="Transpose up a semitone (])"
+              onClick={() => setSong(transpose(song, 1))}>▲</button>
+          </div>
+          <label className="field">
+            <span>Capo</span>
+            <select value={song.capo ?? 0} onChange={(e) => setSong({ ...song, capo: Number(e.target.value) })}>
+              {Array.from({ length: 12 }, (_, f) => <option key={f} value={f}>{f === 0 ? "none" : f}</option>)}
             </select>
           </label>
           <label className="field">
@@ -246,7 +266,10 @@ export function App() {
       <main className="workspace">
         <aside className="side">
           <div className="side-head">
-            <h2>Chords in {keyName(song.tonic, song.mode)}</h2>
+            <h2>
+              Chords in {keyName(song.tonic, song.mode)}
+              {song.capo ? <span className="capo-note">capo {song.capo}: play {keyName(shapeTonic(song.tonic, song.capo), song.mode)} shapes</span> : null}
+            </h2>
             <div className="toggles">
               <label><input type="checkbox" checked={sevenths} onChange={(e) => setSevenths(e.target.checked)} /> 7ths</label>
               <label className="seg">
@@ -265,7 +288,7 @@ export function App() {
               ? "Pick a chord to replace the selected one. Delete removes it."
               : "Click a slot in the chord lane, then pick a chord. The next slot is selected for you."}
           </p>
-          <Palette mode={song.mode} tonic={song.tonic} sevenths={sevenths} onPick={pickChord} />
+          <Palette mode={song.mode} tonic={shapeTonic(song.tonic, song.capo ?? 0)} sevenths={sevenths} onPick={pickChord} />
           <div className="legend">
             <h3>Colors</h3>
             <p>Warm is home, cool is tension.</p>

@@ -5,8 +5,8 @@
  */
 
 import { Midi } from "@tonejs/midi";
-import { chordMidi, degreeMidi } from "./theory";
-import { stepSeconds, type Song } from "./song";
+import { chordMidi } from "./theory";
+import { noteMidi, stepSeconds, type Song } from "./song";
 import { syllabify } from "./tones";
 
 /**
@@ -26,7 +26,7 @@ export function songToMidi(song: Song): Uint8Array {
   melody.name = "Melody";
   [...song.notes].sort((a, b) => a.start - b.start).forEach((note, i) => {
     melody.addNote({
-      midi: degreeMidi(note, song.mode, song.tonic),
+      midi: noteMidi(song, note),
       time: note.start * step,
       duration: note.len * step,
       velocity: 0.85,

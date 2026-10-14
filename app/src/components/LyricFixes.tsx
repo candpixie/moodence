@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  applyLyricFix, degreeMidi, fixReadings, sortedNotes, suggestLyricFixes, syllabify,
+  applyLyricFix, fixReadings, noteMidi, sortedNotes, suggestLyricFixes, syllabify,
   type LyricFix, type LyricProblem, type Song,
 } from "moodence";
 
@@ -13,8 +13,8 @@ interface Props {
    you already wrote. The melody stays, the words move. */
 export function LyricFixes({ song, onApply }: Props) {
   const melody = useMemo(
-    () => sortedNotes(song.notes).map((n) => degreeMidi(n, song.mode, song.tonic)),
-    [song.notes, song.mode, song.tonic],
+    () => sortedNotes(song.notes).map((n) => noteMidi(song, n)),
+    [song],
   );
   const signature = `${song.lyrics}|${melody.join(",")}|${JSON.stringify(song.readings ?? {})}`;
   const [problems, setProblems] = useState<LyricProblem[] | null>(null);

@@ -1,5 +1,5 @@
 import * as Tone from "tone";
-import { STEPS_PER_BAR, chordMidi, degreeMidi, stepSeconds, type Song } from "moodence";
+import { STEPS_PER_BAR, chordMidi, noteMidi, stepSeconds, type Song } from "moodence";
 
 /* One piano for chords and melody. The Salamander samples stream from the
    Tone.js CDN. If they don't load (offline, blocked), fall back to a synth so
@@ -68,7 +68,7 @@ export async function play(song: Song): Promise<void> {
     }, chord.start * step);
   }
   for (const note of song.notes) {
-    const f = freq(degreeMidi(note, song.mode, song.tonic));
+    const f = freq(noteMidi(song, note));
     transport.schedule((time) => {
       piano?.triggerAttackRelease(f, note.len * step * 0.95, time, 0.85);
     }, note.start * step);

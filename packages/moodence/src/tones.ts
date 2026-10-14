@@ -11,8 +11,7 @@
  */
 
 import * as cantojam from "cantojam";
-import { degreeMidi } from "./theory";
-import { sortedNotes, type Song } from "./song";
+import { noteMidi, sortedNotes, type Song } from "./song";
 
 /** One sung syllable. `tone` is "1".."6", or null for English and unknown characters. */
 export interface Syllable {
@@ -116,7 +115,7 @@ export function alignLyrics(song: Song, toneCheck = true): LyricAlignment {
   const readings = song.readings ?? {};
   const sung = syllabify(song.lyrics, readings).filter((s) => !s.skipped);
   const hasCantonese = sung.some((s) => s.tone !== null);
-  const midis = notes.map((n) => degreeMidi(n, song.mode, song.tonic));
+  const midis = notes.map((n) => noteMidi(song, n));
   const report = toneCheck && hasCantonese ? checkTones(song.lyrics, midis, readings) : null;
 
   const byNote = new Map<string, NoteLyric>();

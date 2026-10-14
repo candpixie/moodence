@@ -1,10 +1,21 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["src/theory.ts", "src/parse.ts", "src/stats.ts", "src/song.ts", "src/tones.ts", "src/midi.ts"],
+  "entryPoints": [
+    "src/theory.ts",
+    "src/parse.ts",
+    "src/stats.ts",
+    "src/transpose.ts",
+    "src/song.ts",
+    "src/tones.ts",
+    "src/midi.ts"
+  ],
   "out": "../../site/docs",
   "name": "moodence",
   "readme": "README.md",
   "excludePrivate": true,
   "githubPages": false,
-  "navigationLinks": { "Editor": "https://candpixie.github.io/moodence/", "GitHub": "https://github.com/candpixie/moodence" }
+  "navigationLinks": {
+    "Editor": "https://candpixie.github.io/moodence/",
+    "GitHub": "https://github.com/candpixie/moodence"
+  }
 }
