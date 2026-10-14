@@ -1,0 +1,21 @@
+name: Bug
+description: Something does the wrong thing
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps or code to reproduce
+      description: For the library, a short snippet. For the editor, attach the song .json if you can.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Browser or Node version

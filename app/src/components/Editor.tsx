@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ROWS, chordMidi, chordPitchClasses, chordSymbol, degreeMidi, degreeName, isBorrowed, romanLabel,
-  type DegreePitch,
-} from "../theory";
-import {
-  STEPS_PER_BAR, STEPS_PER_BEAT, chordAt, newId, placeChord, placeNote,
-  type ChordEvent, type NoteEvent, type Song,
-} from "../song";
-import type { LyricReport } from "../lyrics";
+  STEPS_PER_BAR, STEPS_PER_BEAT, chordAt, chordMidi, chordPitchClasses, chordSymbol, degreeMidi,
+  degreeName, isBorrowed, placeChord, placeNote, romanLabel,
+  type ChordEvent, type DegreePitch, type LyricAlignment, type NoteEvent, type Song,
+} from "moodence";
+import { ROWS, newId } from "../song";
 import { preview } from "../audio";
 
 export const CELL = 16;
@@ -22,7 +19,7 @@ export type Selection =
 
 interface Props {
   song: Song;
-  lyrics: LyricReport;
+  lyrics: LyricAlignment;
   guides: boolean;
   selection: Selection;
   playhead: number | null;

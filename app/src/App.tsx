@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Editor, type Selection } from "./components/Editor";
 import { Palette } from "./components/Palette";
-import { analyzeLyrics, syllableTexts } from "./lyrics";
 import { play, playheadStep, preview, stop } from "./audio";
-import { songToMidi } from "./midi";
 import {
-  STEPS_PER_BAR, chordAt, clampToBars, demoSong, emptySong, isSong, loadStored, newId,
-  placeChord, store, type Song,
-} from "./song";
-import { chordMidi, keyName, pitchName, type ChordSpec, type Mode } from "./theory";
-import { TONE_NAMES, corpusSongs, corpusSyllables } from "./vendor/cantojam/cantojam.js";
+  CORPUS, STEPS_PER_BAR, TONE_NAMES, alignLyrics, chordAt, chordMidi, clampToBars, isSong, keyName,
+  pitchName, placeChord, songToMidi, type ChordSpec, type Mode, type Song,
+} from "moodence";
+import { demoSong, emptySong, loadStored, newId, store } from "./song";
 
 const HISTORY_LIMIT = 200;
 
@@ -67,7 +64,7 @@ export function App() {
 
   useEffect(() => store(song), [song]);
 
-  const lyrics = useMemo(() => analyzeLyrics(song, toneCheck), [song, toneCheck]);
+  const lyrics = useMemo(() => alignLyrics(song, toneCheck), [song, toneCheck]);
 
   // ---- playback
 
@@ -230,7 +227,7 @@ export function App() {
             <button type="button" onClick={redo} disabled={!future.current.length} title="Redo (⇧⌘Z)">Redo</button>
           </div>
           <div className="field">
-            <button type="button" onClick={() => download(`${fileName(song)}.mid`, songToMidi(song, syllableTexts(song)), "audio/midi")}>
+            <button type="button" onClick={() => download(`${fileName(song)}.mid`, songToMidi(song), "audio/midi")}>
               Export MIDI
             </button>
             <button type="button" onClick={() => download(`${fileName(song)}.json`, JSON.stringify(song, null, 2), "application/json")}>
@@ -326,7 +323,7 @@ export function App() {
               {toneCheck && lyrics.hasCantonese ? (
                 <p className="fine">
                   Tone rules come from <a href="https://github.com/candpixie/cantojam" target="_blank" rel="noreferrer">cantojam</a>,
-                  measured on {corpusSongs} Cantopop songs ({corpusSyllables.toLocaleString()} sung syllables,
+                  measured on {CORPUS.songs} Cantopop songs ({CORPUS.syllables.toLocaleString()} sung syllables,
                   2000 to 2020). Tones: {Object.entries(TONE_NAMES).map(([t, n]) => `${t} ${n}`).join(" · ")}.
                 </p>
               ) : null}

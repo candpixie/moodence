@@ -14,5 +14,22 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter moodence typecheck
+      - run: pnpm --filter moodence build
       - run: pnpm test
-      - run: pnpm build
+      - run: pnpm --filter moodence-app build
+      - run: pnpm --filter moodence apidocs
+      - name: Every example runs (Node 22)
+        run: node examples/run-all.mjs
+      # The built library promises Node 18+. pnpm itself needs 22, so build
+      # once above, then run the examples against dist/ on older Nodes.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Every example runs (Node 18)
+        run: node --version && node examples/run-all.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Every example runs (Node 20)
+        run: node --version && node examples/run-all.mjs

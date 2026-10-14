@@ -1,0 +1,4 @@
+- [ ] `pnpm test` passes
+- [ ] `node examples/run-all.mjs` passes
+- [ ] New library functions have a doc comment with an example
+- [ ] No lyric text from commercial songs, no files from non-commercial datasets

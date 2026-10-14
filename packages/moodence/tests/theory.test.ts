@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   chordMidi, chordSymbol, degreeMidi, diatonicQuality, isBorrowed, keyName, palette, romanLabel,
   type ChordSpec,
-} from "../src/theory";
+} from "../src";
 
 const d = (deg: number, seventh = false): ChordSpec => ({ deg, acc: 0, quality: null, seventh });
 

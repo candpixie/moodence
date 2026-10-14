@@ -1,11 +1,22 @@
+/**
+ * Standard MIDI file export.
+ *
+ * @module midi
+ */
+
 import { Midi } from "@tonejs/midi";
 import { chordMidi, degreeMidi } from "./theory";
-import { stepSeconds } from "./audio";
-import type { Song } from "./song";
+import { stepSeconds, type Song } from "./song";
+import { syllabify } from "./tones";
 
-/* Two tracks, melody then chords, at the song's tempo. Lyric syllables ride
-   along as MIDI lyric meta events on the melody track, one per note. */
-export function songToMidi(song: Song, syllables: string[] = []): Uint8Array {
+/**
+ * Write a song as a two-track MIDI file (melody, then chords) at its tempo.
+ * Lyric syllables are added as lyric meta events, one per melody note.
+ *
+ * @returns The bytes of a `.mid` file.
+ */
+export function songToMidi(song: Song): Uint8Array {
+  const syllables = syllabify(song.lyrics).filter((s) => !s.skipped).map((s) => s.char);
   const midi = new Midi();
   midi.header.setTempo(song.bpm);
   midi.header.name = song.title;

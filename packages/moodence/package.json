@@ -1,0 +1,57 @@
+{
+  "name": "moodence",
+  "version": "0.1.0",
+  "description": "Scale-degree harmony, chord parsing, progression statistics and Cantonese tone checking for songwriting tools.",
+  "license": "MIT",
+  "author": "Candy Xie",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/candpixie/moodence.git",
+    "directory": "packages/moodence"
+  },
+  "homepage": "https://candpixie.github.io/moodence/docs/",
+  "bugs": "https://github.com/candpixie/moodence/issues",
+  "keywords": [
+    "music-theory",
+    "chords",
+    "roman-numerals",
+    "harmony",
+    "cantonese",
+    "cantopop",
+    "midi",
+    "songwriting"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/moodence.js"
+    }
+  },
+  "main": "./dist/moodence.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "DATA_LICENSE.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "apidocs": "typedoc",
+    "prepublishOnly": "pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "typedoc": "0.26.11",
+    "typescript": "5.6.3",
+    "vite": "5.4.10",
+    "vitest": "2.1.4",
+    "@tonejs/midi": "2.0.28"
+  }
+}

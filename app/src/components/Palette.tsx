@@ -1,4 +1,4 @@
-import { chordSymbol, isBorrowed, palette, romanLabel, type ChordSpec, type Mode } from "../theory";
+import { chordSymbol, isBorrowed, palette, romanLabel, type ChordSpec, type Mode } from "moodence";
 
 interface Props {
   mode: Mode;

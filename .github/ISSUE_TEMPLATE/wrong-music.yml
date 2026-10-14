@@ -1,0 +1,23 @@
+name: Wrong chord, key or tone result
+description: A chord name, Roman numeral, key guess or tone check that is musically wrong
+labels: [music]
+body:
+  - type: input
+    id: input
+    attributes:
+      label: Input
+      description: e.g. romanFromSymbol("G#", 0, "major"), or the lyric and melody
+    validations:
+      required: true
+  - type: input
+    id: got
+    attributes:
+      label: What Moodence said
+    validations:
+      required: true
+  - type: input
+    id: want
+    attributes:
+      label: What it should say, and why
+    validations:
+      required: true

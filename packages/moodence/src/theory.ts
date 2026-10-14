@@ -1,9 +1,17 @@
-// Music theory for a scale-degree editor.
-//
-// Everything in a song is stored relative to the key: melody notes as scale
-// degrees, chords as a degree plus an optional accidental and quality. Change
-// the key and every pitch moves with it, which is the whole point.
+/**
+ * Scale-degree music theory.
+ *
+ * Everything is relative to a key: melody notes are scale degrees, chords are
+ * a degree plus an optional accidental and quality. Change the tonic and every
+ * pitch moves with it.
+ *
+ * Pitch classes are integers 0..11 with C = 0. A key is a `tonic` pitch class
+ * plus a {@link Mode}.
+ *
+ * @module theory
+ */
 
+/** The two modes Moodence models. Minor is natural minor. */
 export type Mode = "major" | "minor";
 
 export const SCALES: Record<Mode, number[]> = {
@@ -41,7 +49,26 @@ export interface ChordSpec {
 
 const mod12 = (n: number) => ((n % 12) + 12) % 12;
 
+/**
+ * The quality a mode gives a scale degree, stacked in thirds.
+ *
+ * @example
+ * diatonicQuality("major", 5, true); // "dom7"
+ */
 export function diatonicQuality(mode: Mode, deg: number, seventh: boolean): Quality {
+  const key = `${mode}${deg}${seventh ? 7 : 3}`;
+  let quality = DIATONIC_CACHE.get(key);
+  if (!quality) {
+    quality = computeDiatonicQuality(mode, deg, seventh);
+    DIATONIC_CACHE.set(key, quality);
+  }
+  return quality;
+}
+
+// Only 28 possible inputs, and corpus-scale key estimation calls this millions of times.
+const DIATONIC_CACHE = new Map<string, Quality>();
+
+function computeDiatonicQuality(mode: Mode, deg: number, seventh: boolean): Quality {
   const scale = SCALES[mode];
   const root = scale[deg - 1];
   const stack = (seventh ? [0, 2, 4, 6] : [0, 2, 4]).map((step) => {
@@ -70,13 +97,13 @@ export function isBorrowed(spec: ChordSpec, mode: Mode): boolean {
   return !own.includes(spec.quality);
 }
 
-/* Pitch classes (0..11, absolute) sounding in a chord. */
+/** Absolute pitch classes (0..11) sounding in a chord. */
 export function chordPitchClasses(spec: ChordSpec, mode: Mode, tonic: number): number[] {
   const root = tonic + chordRootSemis(spec, mode);
   return QUALITY_INTERVALS[chordQuality(spec, mode)].map((i) => mod12(root + i));
 }
 
-/* A close-position voicing with the root between C3 and B3. */
+/** A close-position MIDI voicing with the root between C3 (48) and B3 (59). */
 export function chordMidi(spec: ChordSpec, mode: Mode, tonic: number): number[] {
   const root = 48 + mod12(tonic + chordRootSemis(spec, mode));
   return QUALITY_INTERVALS[chordQuality(spec, mode)].map((i) => root + i);
@@ -89,6 +116,13 @@ const ROMAN_SUFFIX: Record<Quality, string> = {
   maj7: "maj7", min7: "7", dom7: "7", hdim7: "ø7", dim7: "°7",
 };
 
+/**
+ * Roman numeral for a chord: case for quality, ° ø + for diminished,
+ * half-diminished and augmented, ♭/♯ for a chromatic root.
+ *
+ * @example
+ * romanLabel({ deg: 6, acc: -1, quality: "maj", seventh: false }, "major"); // "♭VI"
+ */
 export function romanLabel(spec: ChordSpec, mode: Mode): string {
   if (spec.label) return spec.label;
   const quality = chordQuality(spec, mode);
@@ -124,8 +158,10 @@ const LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
 const LETTER_PC = [0, 2, 4, 5, 7, 9, 11];
 const ACCIDENTALS: Record<number, string> = { [-2]: "𝄫", [-1]: "♭", 0: "", 1: "♯", 2: "𝄪" };
 
-/* Spell a scale degree by letter, so the 6th of C is always some kind of A
-   (A, A♭) and never G♯. `semis` is the actual distance above the tonic. */
+/**
+ * Spell a scale degree by letter, so the 6th of C is always some kind of A
+ * (A, A♭) and never G♯. `semis` is the actual distance above the tonic.
+ */
 export function spellDegree(tonic: number, mode: Mode, deg: number, semis: number): string {
   const tonicLetter = LETTERS.indexOf(pitchName(tonic, tonic, mode)[0]);
   const letter = (tonicLetter + deg - 1) % 7;
@@ -134,6 +170,12 @@ export function spellDegree(tonic: number, mode: Mode, deg: number, semis: numbe
   return LETTERS[letter] + (ACCIDENTALS[offset] ?? "?");
 }
 
+/**
+ * Lead-sheet symbol for a chord in a key.
+ *
+ * @example
+ * chordSymbol({ deg: 4, acc: 0, quality: null, seventh: false }, "major", 5); // "B♭"
+ */
 export function chordSymbol(spec: ChordSpec, mode: Mode, tonic: number): string {
   const root = spellDegree(tonic, mode, spec.deg, chordRootSemis(spec, mode));
   return root + SYMBOL_SUFFIX[chordQuality(spec, mode)];
@@ -148,8 +190,10 @@ export interface PaletteGroup {
   chords: ChordSpec[];
 }
 
-/* Every chord the palette offers in a mode. Diatonic first, then the
-   borrowed and secondary chords that show up constantly in pop. */
+/**
+ * A curated chord palette for a mode: diatonic first, then borrowed and
+ * secondary chords common in pop.
+ */
 export function palette(mode: Mode, seventh: boolean): PaletteGroup[] {
   const diatonic = [1, 2, 3, 4, 5, 6, 7].map((deg) => ({ deg, acc: 0, quality: null, seventh }));
   const c = (deg: number, acc: number, quality: Quality, label?: string): ChordSpec =>
@@ -169,7 +213,7 @@ export function palette(mode: Mode, seventh: boolean): PaletteGroup[] {
   ];
 }
 
-/* Melody notes are scale degrees too. */
+/** A melody pitch as a scale degree. `oct` is relative to the tonic octave. */
 export interface DegreePitch {
   deg: number; // 1..7
   oct: number; // -1, 0, +1 relative to the tonic octave
@@ -181,13 +225,10 @@ export function tonicMidi(tonic: number): number {
   return 60 + (pc > 6 ? pc - 12 : pc);
 }
 
+/**
+ * MIDI number for a scale degree. The tonic octave sits around middle C:
+ * tonics C to F♯ start at 60 to 66, G to B start at 55 to 59.
+ */
 export function degreeMidi(p: DegreePitch, mode: Mode, tonic: number): number {
   return tonicMidi(tonic) + SCALES[mode][p.deg - 1] + p.acc + 12 * p.oct;
 }
-
-/* Grid rows, top to bottom: 5 up to 5 down around the tonic octave. */
-export const ROWS: DegreePitch[] = [
-  ...[5, 4, 3, 2, 1].map((deg) => ({ deg, oct: 1, acc: 0 })),
-  ...[7, 6, 5, 4, 3, 2, 1].map((deg) => ({ deg, oct: 0, acc: 0 })),
-  ...[7, 6, 5].map((deg) => ({ deg, oct: -1, acc: 0 })),
-];

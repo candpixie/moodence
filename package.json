@@ -1,29 +1,16 @@
 {
-  "name": "moodence",
-  "version": "0.1.0",
+  "name": "moodence-workspace",
   "private": true,
-  "description": "Open-source songwriting pad: write in scale degrees, see harmony by color, check Cantonese lyric tones against your melody.",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@11.20.0",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@tonejs/midi": "2.0.28",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "tone": "15.0.4"
+    "dev": "pnpm --filter moodence build && pnpm --filter moodence-app dev",
+    "build": "pnpm --filter moodence build && pnpm --filter moodence-app build && pnpm --filter moodence apidocs",
+    "test": "pnpm -r test",
+    "examples": "pnpm --filter moodence build && node examples/run-all.mjs"
   },
   "devDependencies": {
-    "@types/react": "18.3.12",
-    "@types/react-dom": "18.3.1",
-    "@vitejs/plugin-react": "4.3.3",
-    "typescript": "5.6.3",
-    "vite": "5.4.10",
-    "vitest": "2.1.4"
-  },
-  "packageManager": "pnpm@11.20.0"
+    "moodence": "workspace:*"
+  }
 }

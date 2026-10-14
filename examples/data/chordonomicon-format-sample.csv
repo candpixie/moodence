@@ -1,0 +1,5 @@
+id,chords,release_date,genres,decade,rock_genre,artist_id,main_genre,spotify_song_id,spotify_artist_id
+1,<verse_1> C G Amin F C G F C <chorus_1> F G C Amin F G C,,'synthetic',,,artist_x,pop,,
+2,<verse_1> Amin F C G Amin F E7 Amin,,'synthetic',,,artist_x,pop,,
+3,<intro_1> D A/Cs Bmin G <verse_1> D A Bmin G D A G D,,'synthetic',,,artist_x,rock,,
+4,<verse_1> Fsmin D A E Fsmin D E Fsmin,,'synthetic',,,artist_x,pop,,
