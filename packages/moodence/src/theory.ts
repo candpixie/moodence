@@ -11,12 +11,16 @@
  * @module theory
  */
 
-/** The two modes Moodence models. Minor is natural minor. */
-export type Mode = "major" | "minor";
+/**
+ * The modes Moodence models. Minor is natural minor. Dorian is minor with a
+ * major IV (Bm E A in B Dorian), common in rock and pop vamps.
+ */
+export type Mode = "major" | "minor" | "dorian";
 
 export const SCALES: Record<Mode, number[]> = {
   major: [0, 2, 4, 5, 7, 9, 11],
   minor: [0, 2, 3, 5, 7, 8, 10],
+  dorian: [0, 2, 3, 5, 7, 9, 10],
 };
 
 export type Quality =
@@ -65,7 +69,7 @@ export function diatonicQuality(mode: Mode, deg: number, seventh: boolean): Qual
   return quality;
 }
 
-// Only 28 possible inputs, and corpus-scale key estimation calls this millions of times.
+// Only 42 possible inputs, and corpus-scale key estimation calls this millions of times.
 const DIATONIC_CACHE = new Map<string, Quality>();
 
 function computeDiatonicQuality(mode: Mode, deg: number, seventh: boolean): Quality {
@@ -134,11 +138,15 @@ export function romanLabel(spec: ChordSpec, mode: Mode): string {
 
 const SHARP_NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 const FLAT_NAMES = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
-const FLAT_MAJOR = [5, 10, 3, 8, 1, 6];
+// F♯ major over G♭ (no C♭ chord), E♭ minor over D♯ minor (no E♯).
+const FLAT_MAJOR = [5, 10, 3, 8, 1];
 const FLAT_MINOR = [2, 7, 0, 5, 10, 3];
+// A Dorian key uses the signature of the major key a whole step below.
+const FLAT_DORIAN = FLAT_MAJOR.map((t) => mod12(t + 2));
 
 export function prefersFlats(tonic: number, mode: Mode): boolean {
-  return (mode === "major" ? FLAT_MAJOR : FLAT_MINOR).includes(mod12(tonic));
+  const flats = mode === "major" ? FLAT_MAJOR : mode === "minor" ? FLAT_MINOR : FLAT_DORIAN;
+  return flats.includes(mod12(tonic));
 }
 
 export function pitchName(pc: number, tonic: number, mode: Mode): string {
@@ -146,7 +154,7 @@ export function pitchName(pc: number, tonic: number, mode: Mode): string {
 }
 
 export function keyName(tonic: number, mode: Mode): string {
-  return `${pitchName(tonic, tonic, mode)} ${mode}`;
+  return `${pitchName(tonic, tonic, mode)} ${mode === "dorian" ? "Dorian" : mode}`;
 }
 
 const SYMBOL_SUFFIX: Record<Quality, string> = {
@@ -204,6 +212,13 @@ export function palette(mode: Mode, seventh: boolean): PaletteGroup[] {
       { title: "Borrowed from minor", chords: [c(4, 0, "min"), c(6, -1, "maj"), c(7, -1, "maj"), c(3, -1, "maj")] },
       { title: "Secondary dominants", chords: [c(1, 0, "dom7", "V7/IV"), c(2, 0, "dom7", "V7/V"), c(3, 0, "dom7", "V7/vi"), c(6, 0, "dom7", "V7/ii")] },
       { title: "Color", chords: [c(5, 0, "sus4"), c(2, 0, "min7"), c(4, 0, "maj7")] },
+    ];
+  }
+  if (mode === "dorian") {
+    return [
+      { title: "In the key", chords: diatonic },
+      { title: "Borrowed from minor", chords: [c(4, 0, "min"), c(6, -1, "maj"), c(5, 0, "maj"), c(5, 0, "dom7")] },
+      { title: "Color", chords: [c(5, 0, "sus4"), c(4, 0, "dom7"), c(1, 0, "maj", "I (Picardy)")] },
     ];
   }
   return [

@@ -45,6 +45,12 @@ describe("estimateKey", () => {
     expect(key("Am F C G Am")).toEqual([9, "minor"]);
     expect(key("Em C G D Em B7 Em")).toEqual([4, "minor"]);
   });
+  it("hears Dorian only when the tonic chord is clearly home", () => {
+    expect(key("Bm E A F#m Bm")).toEqual([11, "dorian"]);
+    expect(key("Dm G Dm G Dm")).toEqual([2, "dorian"]);
+    expect(key("Dm G C")).toEqual([0, "major"]); // ii V I stays major
+    expect(key("Am F C G Am")).toEqual([9, "minor"]); // no major IV, stays minor
+  });
   it("reports fit and ambiguity", () => {
     const k = estimateKey("C G Am F")!;
     expect(k.fit).toBe(1);

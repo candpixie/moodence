@@ -123,7 +123,7 @@ Contributed songs may include chords, melody and jyutping or tone numbers. Full 
 
 - Cantopop chord data barely exists yet. Chordonomicon tags 41 of its 679,807 songs as Cantopop, and the Cantopop corpus has melody, lyrics and jyutping but no chords.
 - The tone model comes from 105 songs (2000 to 2020), mostly ballads in written Cantonese. Colloquial and post-2020 styles are under-represented.
-- `estimateKey` reads chords only. Modal and chromatic songs get a low `fit`, and relative keys can swap when a song rarely lands on its tonic.
+- `estimateKey` reads chords only. It knows major, natural minor and Dorian. Other modes and chromatic songs get a low `fit`, and keys that share chords (C major, A minor, D Dorian) can swap when a song rarely lands on its tonic. A loop like Bm E A F♯m that never returns to Bm comes back as F♯ minor, even if your ear says B.
 - Minor is natural minor. A major V in minor is treated as borrowed in the editor, but counts as in-key for key estimation.
 - Not built: mood labels, next-chord suggestions inside the editor, Web MIDI input, a Mandarin tone mode.
 

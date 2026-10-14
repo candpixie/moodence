@@ -112,10 +112,11 @@ const mod12 = (n: number) => ((n % 12) + 12) % 12;
 /**
  * Guess the key of a chord progression from its symbols.
  *
- * Scores all 24 major and minor keys by how many chords are diatonic, then
- * breaks the tie between relative keys (C major and A minor share every
- * chord) by how often the tonic chord appears and whether the progression
- * starts or ends on it. Only chords are used, never a melody, so modal and
+ * Scores all 36 major, minor and Dorian keys by how many chords are
+ * diatonic, then breaks the tie between keys that share every chord
+ * (C major, A minor, D Dorian) by how often the tonic chord appears and
+ * whether the progression starts or ends on it. Dorian needs a clear lead
+ * on that evidence to win. Only chords are used, never a melody, so modal and
  * chromatic songs come back with a low `fit`.
  *
  * @example
@@ -127,7 +128,7 @@ export function estimateKey(progression: string | string[]): KeyEstimate | null 
   if (!parsed.length) return null;
 
   const scored: { tonic: number; mode: Mode; fit: number; score: number }[] = [];
-  for (const mode of ["major", "minor"] as const) {
+  for (const mode of ["major", "minor", "dorian"] as const) {
     for (let tonic = 0; tonic < 12; tonic++) {
       let inKey = 0;
       let onTonic = 0;
@@ -141,7 +142,9 @@ export function estimateKey(progression: string | string[]): KeyEstimate | null 
       });
       const isTonic = (spec: ChordSpec | null) => !!spec && spec.deg === 1 && spec.acc === 0 && spec.quality === null;
       const fit = inKey / parsed.length;
-      const score = fit + 0.3 * (onTonic / parsed.length)
+      // Dorian shares every chord with a major and a minor key, so it has to
+      // win on tonic evidence alone, never on a tie.
+      const score = (mode === "dorian" ? -0.1 : 0) + fit + 0.3 * (onTonic / parsed.length)
         + 0.1 * Number(isTonic(specs[0])) + 0.15 * Number(isTonic(specs[specs.length - 1]));
       scored.push({ tonic, mode, fit, score });
     }

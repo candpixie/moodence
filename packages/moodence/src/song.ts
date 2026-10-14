@@ -95,5 +95,5 @@ export function clampToBars(song: Song): Song {
 export function isSong(value: unknown): value is Song {
   const s = value as Song;
   return !!s && s.version === 1 && Array.isArray(s.chords) && Array.isArray(s.notes)
-    && typeof s.tonic === "number" && (s.mode === "major" || s.mode === "minor");
+    && typeof s.tonic === "number" && ["major", "minor", "dorian"].includes(s.mode as string);
 }

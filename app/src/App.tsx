@@ -211,6 +211,7 @@ export function App() {
             <select value={song.mode} onChange={(e) => setSong({ ...song, mode: e.target.value as Mode })}>
               <option value="major">major</option>
               <option value="minor">minor</option>
+              <option value="dorian">Dorian</option>
             </select>
           </label>
           <div className="field">

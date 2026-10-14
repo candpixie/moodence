@@ -57,7 +57,7 @@ describe("borrowed chords", () => {
     expect(isBorrowed({ deg: 5, acc: 0, quality: "maj", seventh: false }, "minor")).toBe(true);
   });
   it("offers chords that all resolve to real symbols", () => {
-    for (const mode of ["major", "minor"] as const) {
+    for (const mode of ["major", "minor", "dorian"] as const) {
       for (const group of palette(mode, true)) {
         for (const spec of group.chords) expect(chordSymbol(spec, mode, 2)).toMatch(/^[A-G]/);
       }
@@ -65,12 +65,26 @@ describe("borrowed chords", () => {
   });
 });
 
+describe("Dorian", () => {
+  it("is minor with a major IV", () => {
+    expect([1, 2, 3, 4, 5, 6, 7].map((n) => diatonicQuality("dorian", n, false)))
+      .toEqual(["min", "min", "maj", "maj", "min", "dim", "maj"]);
+    const shapes = [1, 4, 7, 5].map((deg) => chordSymbol(d(deg), "dorian", 11));
+    expect(shapes).toEqual(["Bm", "E", "A", "F♯m"]);
+    expect(keyName(11, "dorian")).toBe("B Dorian");
+  });
+  it("uses the key signature of the major key a whole step down", () => {
+    expect(chordSymbol(d(1), "dorian", 0)).toBe("Cm"); // C Dorian = B♭ major
+    expect(chordSymbol(d(3), "dorian", 0)).toBe("E♭");
+    expect(chordSymbol(d(4), "dorian", 9)).toBe("D"); // A Dorian = G major
+  });
+});
+
 describe("spelling", () => {
   it("spells every degree with its own letter", () => {
     const names = [1, 2, 3, 4, 5, 6, 7].map((deg) => chordSymbol({ deg, acc: 0, quality: "maj", seventh: false }, "major", 6));
-    expect(names.map((n) => n[0])).toEqual(["G", "A", "B", "C", "D", "E", "F"]); // G♭ major
-    expect(names[0]).toBe("G♭");
-    expect(names[3]).toBe("C♭");
+    expect(names).toEqual(["F♯", "G♯", "A♯", "B", "C♯", "D♯", "E♯"]); // F♯ major, not G♭ with a C♭ IV
+    expect(chordSymbol({ deg: 6, acc: 0, quality: null, seventh: false }, "minor", 3)).toBe("C♭"); // E♭ minor still uses flats
   });
   it("spells minor-key borrowed chords", () => {
     expect(chordSymbol({ deg: 2, acc: -1, quality: "maj", seventh: false }, "minor", 9)).toBe("B♭"); // Neapolitan in A minor
