@@ -48,10 +48,11 @@
     "prepublishOnly": "pnpm test && pnpm build"
   },
   "devDependencies": {
+    "@tonejs/midi": "2.0.28",
+    "cantojam": "github:candpixie/CantoJam#f1a37c58d7cf2da7b62db168505ce9b3ba1ff372",
     "typedoc": "0.26.11",
     "typescript": "5.6.3",
     "vite": "5.4.10",
-    "vitest": "2.1.4",
-    "@tonejs/midi": "2.0.28"
+    "vitest": "2.1.4"
   }
 }

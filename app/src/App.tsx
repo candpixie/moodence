@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Editor, type Selection } from "./components/Editor";
 import { Palette } from "./components/Palette";
+import { LyricFixes } from "./components/LyricFixes";
 import { play, playheadStep, preview, stop } from "./audio";
 import {
   CORPUS, STEPS_PER_BAR, TONE_NAMES, alignLyrics, chordAt, chordMidi, clampToBars, isSong, keyName,
@@ -314,15 +315,18 @@ export function App() {
                 lyrics.violations.length + lyrics.unusual.length === 0 ? (
                   <p className="ok">Melody follows the lyric tones.</p>
                 ) : (
-                  <ul className="issues">
-                    {lyrics.violations.map((r) => <li key={`v${r.index}`} className="is-violation">{r.message}</li>)}
-                    {lyrics.unusual.map((r) => <li key={`u${r.index}`} className="is-unusual">{r.message}</li>)}
-                  </ul>
+                  <>
+                    <ul className="issues">
+                      {lyrics.violations.map((r) => <li key={`v${r.index}`} className="is-violation">{r.message}</li>)}
+                      {lyrics.unusual.map((r) => <li key={`u${r.index}`} className="is-unusual">{r.message}</li>)}
+                    </ul>
+                    {mismatch ? null : <LyricFixes song={song} onApply={setSong} />}
+                  </>
                 )
               ) : null}
               {toneCheck && lyrics.hasCantonese ? (
                 <p className="fine">
-                  Tone rules come from <a href="https://github.com/candpixie/cantojam" target="_blank" rel="noreferrer">cantojam</a>,
+                  Tone rules come from <a href="https://github.com/candpixie/CantoJam" target="_blank" rel="noreferrer">cantojam</a>,
                   measured on {CORPUS.songs} Cantopop songs ({CORPUS.syllables.toLocaleString()} sung syllables,
                   2000 to 2020). Tones: {Object.entries(TONE_NAMES).map(([t, n]) => `${t} ${n}`).join(" · ")}.
                 </p>

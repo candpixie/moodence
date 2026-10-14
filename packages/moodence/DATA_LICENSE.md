@@ -2,15 +2,17 @@
 
 ## Cantonese tone model
 
-`packages/moodence/src/vendor/cantojam/` is copied from
-[cantojam](https://github.com/candpixie/cantojam) (MIT), commit b33fe77.
+The tone check and word finder come from the `cantojam` package
+([CantoJam](https://github.com/candpixie/CantoJam), MIT), installed from GitHub
+at the commit pinned in `packages/moodence/package.json` and bundled into the
+library build.
 
-Its `data.js` is derived from:
+Its `data.js` and `lexicon.js` are derived from:
 
 > Jason Lee, *A Corpus of Cantonese Popular Music, 2000-2020*.
 > https://github.com/jasonleeubc/Cantopop-corpus. CC BY 4.0.
 
-That file is redistributed under CC BY 4.0, not MIT. Attribution is the only
+Those files are redistributed under CC BY 4.0, not MIT. Attribution is the only
 requirement. The `COLLOQUIAL` table inside it was written for cantojam and is MIT.
 
 ## Chordonomicon

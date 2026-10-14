@@ -51,6 +51,9 @@ importers:
       '@tonejs/midi':
         specifier: 2.0.28
         version: 2.0.28
+      cantojam:
+        specifier: github:candpixie/CantoJam#f1a37c58d7cf2da7b62db168505ce9b3ba1ff372
+        version: https://codeload.github.com/candpixie/CantoJam/tar.gz/f1a37c58d7cf2da7b62db168505ce9b3ba1ff372
       typedoc:
         specifier: 0.26.11
         version: 0.26.11(typescript@5.6.3)
@@ -586,6 +589,10 @@ packages:
 
   caniuse-lite@1.0.30001815:
     resolution: {integrity: sha512-uDybUEyfgbyJJ93J1vikTylBX31AkdVYeVPeffMQpf8XN7hSfr0oZOn4VFOIMNvtU5+rHvC5Udg2TgtJKHm23Q==}
+
+  cantojam@https://codeload.github.com/candpixie/CantoJam/tar.gz/f1a37c58d7cf2da7b62db168505ce9b3ba1ff372:
+    resolution: {gitHosted: true, integrity: sha512-77+Q8Py+498gmrTtKY8gYzh85S4XPYDZZOmryfgS3sZBnArTdT/j9oRn3G4AQam/JMQkPN9HezBR1HbC0abOhA==, tarball: https://codeload.github.com/candpixie/CantoJam/tar.gz/f1a37c58d7cf2da7b62db168505ce9b3ba1ff372}
+    version: 0.2.0
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -1435,6 +1442,8 @@ snapshots:
   cac@6.7.14: {}
 
   caniuse-lite@1.0.30001815: {}
+
+  cantojam@https://codeload.github.com/candpixie/CantoJam/tar.gz/f1a37c58d7cf2da7b62db168505ce9b3ba1ff372: {}
 
   ccount@2.0.1: {}
 

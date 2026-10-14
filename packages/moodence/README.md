@@ -21,7 +21,7 @@ checkTones("慢慢行", [62, 62, 67]).violations;          // 行 should fall, t
 | `parse` | Chord symbols and Roman numerals (incl. secondary dominants) to key-relative chords |
 | `stats` | Key estimation, romanizing progressions, chord-transition counts, next-chord ranking |
 | `song` | The song model used by the Moodence editor (plain JSON) |
-| `tones` | Cantonese syllables, jyutping, and a melody-vs-lyric-tone check (cantojam model) |
+| `tones` | Cantonese syllables and jyutping, a melody-vs-lyric-tone check, and corpus words that fit a clash (from cantojam) |
 | `midi` | Standard MIDI file export with lyric events |
 
 Full API reference: https://candpixie.github.io/moodence/docs/

@@ -38,6 +38,8 @@ export interface Song {
   notes: NoteEvent[];
   /** One syllable per melody note, in time order. */
   lyrics: string;
+  /** Pinned Cantonese readings for characters with more than one, e.g. `{ 一: "jat6" }`. */
+  readings?: Record<string, string>;
 }
 
 /** Seconds per grid step at a tempo. */

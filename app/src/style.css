@@ -206,3 +206,17 @@ a { color: inherit; }
 .issues .is-violation::marker { color: var(--bad); }
 .issues .is-unusual::marker { color: var(--warn); }
 .issues li { margin: 3px 0; }
+
+/* ---- lyric fixes (cantojam word finder) */
+
+.find-words { margin-top: 10px; }
+.fixes { margin-top: 10px; display: grid; gap: 10px; }
+.fix { border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: 8px; padding: 8px 12px; background: var(--bg); }
+.fix.is-unusual { border-left-color: var(--warn); }
+.fix-title { margin: 0 0 4px; font-size: 13px; }
+.fix-title b { font: 500 16px var(--hk); margin-right: 4px; }
+.fix .fine { margin: 6px 0 4px; }
+.fix-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.fix-options button { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; padding: 5px 9px; }
+.fix-word { font: 500 15px var(--hk); }
+.fix-jyut { font-size: 11px; color: var(--muted); }

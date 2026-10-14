@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@11.20.0",
   "scripts": {
-    "dev": "pnpm --filter moodence build && pnpm --filter moodence-app dev",
+    "dev": "pnpm --filter moodence-app dev",
     "build": "pnpm --filter moodence build && pnpm --filter moodence-app build && pnpm --filter moodence apidocs",
     "test": "pnpm -r test",
     "examples": "pnpm --filter moodence build && node examples/run-all.mjs"

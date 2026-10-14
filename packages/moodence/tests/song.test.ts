@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { Midi } from "@tonejs/midi";
 import {
-  STEPS_PER_BAR, alignLyrics, checkTones, clampToBars, isSong, placeNote, songToMidi, syllabify,
+  STEPS_PER_BAR, alignLyrics, applyLyricFix, checkTones, clampToBars, isSong, placeNote, songToMidi,
+  fixReadings, suggestLyricFixes, syllabify,
   type NoteEvent, type Song,
 } from "../src";
 
@@ -47,6 +48,12 @@ describe("tones", () => {
     expect(a.byNote.get("z")?.text).toBe("行");
     expect(a.violations).toHaveLength(0);
   });
+  it("honours pinned readings", () => {
+    // 行 is hang4 by default. Pinned to hang6 (tone 6 to 6 holds), a flat melody is fine.
+    const flat = song([note("x", 2, 0, 0), note("y", 2, 0, 4), note("z", 2, 0, 8)]);
+    expect(alignLyrics(flat).violations).toHaveLength(1);
+    expect(alignLyrics({ ...flat, readings: { 行: "hang6" } }).violations).toHaveLength(0);
+  });
   it("does not check non-Cantonese lyrics", () => {
     const a = alignLyrics({ ...song([note("x", 1, 0, 0)]), lyrics: "la" });
     expect(a.hasCantonese).toBe(false);
@@ -61,5 +68,33 @@ describe("songToMidi", () => {
     expect(midi.tracks[0].notes.map((n) => n.midi)).toEqual([62, 62, 59]);
     expect(midi.tracks[1].notes).toHaveLength(3);
     expect(Math.round(midi.header.tempos[0].bpm)).toBe(100);
+  });
+});
+
+describe("lyric fixes", () => {
+  it("suggests corpus words that fit the clash, and they really fit", async () => {
+    const melody = [62, 62, 67];
+    const [problem] = await suggestLyricFixes("慢慢行", melody);
+    expect(problem.kind).toBe("violation");
+    expect(problem.phrases.length).toBeGreaterThan(0);
+    for (const fix of [...problem.phrases, ...problem.singles]) {
+      const fixed = applyLyricFix("慢慢行", fix);
+      // A pin like "一=jat6" means: sing that character with that reading.
+      expect(checkTones(fixed, melody, fixReadings(fix)).violations).toHaveLength(0);
+    }
+  });
+  it("keeps spaces and punctuation when applying a fix", () => {
+    expect(applyLyricFix("慢慢，行 啦", { start: 1, length: 2, word: "路燈" })).toBe("慢路，燈 啦");
+    expect(applyLyricFix("慢慢行", { start: 2, length: 1, word: "等" })).toBe("慢慢等");
+  });
+  it("never suggests a fix that joins two lyric lines", async () => {
+    // 行 ends line one and clashes. Fixes may change 慢行 or 行, never 行抬.
+    const problems = await suggestLyricFixes("慢慢行 抬頭", [62, 62, 67, 57, 57]);
+    const all = problems.flatMap((p) => [...p.phrases, ...p.singles]);
+    expect(all.length).toBeGreaterThan(0);
+    expect(all.every((f) => !f.replaces.includes("抬"))).toBe(true);
+  });
+  it("ignores fixes that do not fit the line", () => {
+    expect(applyLyricFix("慢慢行", { start: 2, length: 2, word: "路燈" })).toBe("慢慢行");
   });
 });

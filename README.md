@@ -69,7 +69,7 @@ pnpm examples   # runs every script in examples/
 | `theory` | `diatonicQuality`, `chordPitchClasses`, `chordMidi`, `romanLabel`, `chordSymbol`, `spellDegree`, `degreeMidi`, `palette` |
 | `parse` | `parseChordSymbol`, `parseRoman` (incl. `V7/vi`, `vii°7/V`), `romanFromSymbol`, `splitProgression` |
 | `stats` | `estimateKey`, `romanize`, `countTransitions`, `nextChords` |
-| `tones` | `syllabify`, `checkTones`, `alignLyrics` (Cantonese, cantojam model) |
+| `tones` | `syllabify`, `checkTones`, `alignLyrics`, `suggestLyricFixes`, `applyLyricFix` (Cantonese, from cantojam) |
 | `midi` | `songToMidi` (melody + chord tracks, lyric meta events) |
 | `song` | The editor's JSON song model and editing helpers |
 
@@ -83,7 +83,7 @@ Conventions: pitch classes are `0..11` with C = 0. Chords are stored relative to
 - Chord palette per key: diatonic, borrowed from the parallel mode, secondary dominants, sus and 7th colors.
 - Degree colors by stability: 1, 3, 5 warm, 2, 4, 6, 7 cool. Borrowed chords are hatched.
 - Melody guides tint the rows that are chord tones under each chord.
-- Lyrics land one syllable per note. Cantonese lines are checked against the melody.
+- Lyrics land one syllable per note. Cantonese lines are checked against the melody, and clashes get corpus words that fit the notes (cantojam's word finder).
 - Sampled piano playback (synth fallback offline), undo/redo, MIDI export with lyrics, `.json` save/open, autosave.
 
 ## Examples
@@ -110,7 +110,7 @@ vi   -> IV 39%, V 26%, I 16%, ii 7%, iii 6%
 
 | Source | Used for | License | In this repo |
 |---|---|---|---|
-| [Cantopop corpus](https://github.com/jasonleeubc/Cantopop-corpus) (Jason Lee), via [cantojam](https://github.com/candpixie/cantojam) | Tone-melody rules | CC BY 4.0 | Derived statistics only (`data.js`) |
+| [Cantopop corpus](https://github.com/jasonleeubc/Cantopop-corpus) (Jason Lee), via [CantoJam](https://github.com/candpixie/CantoJam) | Tone-melody rules, word finder | CC BY 4.0 | Bundled into the library build from the `cantojam` package |
 | [Chordonomicon](https://huggingface.co/datasets/ailsntua/Chordonomicon) | Example 04 | CC BY-NC 4.0 | No. Download it yourself. Results derived from it are non-commercial. |
 | Salamander Grand Piano | Editor playback | CC BY 3.0 | No. Streamed from the Tone.js CDN. |
 
@@ -130,4 +130,4 @@ See [`CITATION.cff`](CITATION.cff), or use "Cite this repository" on GitHub. If 
 
 ## License
 
-Code: [MIT](LICENSE). `packages/moodence/src/vendor/cantojam/data.js`: CC BY 4.0. Details in [ATTRIBUTION.md](ATTRIBUTION.md).
+Code: [MIT](LICENSE). The Cantopop-derived data bundled from cantojam is CC BY 4.0. Details in [ATTRIBUTION.md](ATTRIBUTION.md).

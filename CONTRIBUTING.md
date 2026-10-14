@@ -20,7 +20,7 @@ pnpm examples   # every script in examples/
 - `pnpm test` and `node examples/run-all.mjs` pass.
 - New library functions have a doc comment with an `@example`.
 - A parser that cannot read something returns `null`. It does not guess.
-- `src/vendor/cantojam/` is copied from cantojam. Change it there, then copy it back.
+- The Cantonese tone model comes from the `cantojam` package, pinned to a commit in `packages/moodence/package.json`. Fix tone behaviour in [CantoJam](https://github.com/candpixie/CantoJam), then bump the pin.
 
 ## Data
 
