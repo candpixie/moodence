@@ -1,4 +1,5 @@
 import { chordSymbol, isBorrowed, palette, romanLabel, type ChordSpec, type Mode } from "moodence";
+import { Music } from "./Music";
 
 interface Props {
   mode: Mode;
@@ -22,8 +23,8 @@ export function Palette({ mode, tonic, sevenths, onPick }: Props) {
                 style={{ ["--c" as string]: `var(--d${spec.deg})` }}
                 onClick={() => onPick(spec)}
               >
-                <span className="chord-roman">{romanLabel(spec, mode)}</span>
-                <span className="chord-symbol">{chordSymbol(spec, mode, tonic)}</span>
+                <span className="chord-roman"><Music text={romanLabel(spec, mode)} /></span>
+                <span className="chord-symbol"><Music text={chordSymbol(spec, mode, tonic)} /></span>
               </button>
             ))}
           </div>

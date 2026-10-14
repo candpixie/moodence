@@ -6,6 +6,7 @@ import {
 } from "moodence";
 import { ROWS, newId } from "../song";
 import { preview } from "../audio";
+import { Music } from "./Music";
 
 export const CELL = 16;
 export const ROW_H = 26;
@@ -167,13 +168,14 @@ export function Editor({ song, lyrics, guides, selection, playhead, onSelect, on
   const guideRects: JSX.Element[] = [];
   if (guides) {
     for (const chord of chords) {
+      // One color per chord (its own), with the root a step stronger.
       const pcs = chordPitchClasses(chord, song.mode, song.tonic);
       ROWS.forEach((r, i) => {
         const pc = degreeMidi(r, song.mode, song.tonic) % 12;
         if (!pcs.includes(pc)) return;
         guideRects.push(
-          <div key={`${chord.id}-${i}`} className="guide"
-            style={{ left: chord.start * CELL, top: i * ROW_H, width: chord.len * CELL, height: ROW_H, background: degVar(r.deg) }} />,
+          <div key={`${chord.id}-${i}`} className={`guide${pc === pcs[0] ? " is-root" : ""}`}
+            style={{ left: chord.start * CELL, top: i * ROW_H, width: chord.len * CELL, height: ROW_H, background: degVar(chord.deg) }} />,
         );
       });
     }
@@ -194,7 +196,7 @@ export function Editor({ song, lyrics, guides, selection, playhead, onSelect, on
             <span className="label-deg" style={{ color: degVar(r.deg) }}>
               {r.deg}{r.oct > 0 ? "′" : r.oct < 0 ? "," : ""}
             </span>
-            <span className="label-name">{degreeName(r, song.mode, song.tonic)}</span>
+            <span className="label-name"><Music text={degreeName(r, song.mode, song.tonic)} /></span>
           </div>
         ))}
       </div>
@@ -227,8 +229,8 @@ export function Editor({ song, lyrics, guides, selection, playhead, onSelect, on
                 style={{ left: c.start * CELL, width: c.len * CELL, ["--c" as string]: degVar(c.deg) }}
                 title={`${romanLabel(c, song.mode)} (${chordSymbol(c, song.mode, song.tonic)}${capo ? `, play ${chordName(c)} shape with capo ${capo}` : ""}). Drag the right edge to resize.`}
               >
-                <span className="chord-roman">{romanLabel(c, song.mode)}</span>
-                <span className="chord-symbol">{chordName(c)}</span>
+                <span className="chord-roman"><Music text={romanLabel(c, song.mode)} /></span>
+                <span className="chord-symbol"><Music text={chordName(c)} /></span>
               </div>
             ))}
           </div>
@@ -242,6 +244,9 @@ export function Editor({ song, lyrics, guides, selection, playhead, onSelect, on
             onPointerUp={onGridUp}
             onPointerCancel={() => setDrag(null)}
           >
+            {ROWS.map((r, i) => r.deg === 1
+              ? <div key={`t${i}`} className="tonic-band" style={{ top: i * ROW_H, height: ROW_H }} />
+              : null)}
             {guideRects}
             {notes.map((n) => {
               const lyric = lyrics.byNote.get(n.id);

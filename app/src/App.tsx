@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Editor, type Selection } from "./components/Editor";
 import { Palette } from "./components/Palette";
 import { LyricFixes } from "./components/LyricFixes";
+import { Music } from "./components/Music";
 import { play, playheadStep, preview, stop } from "./audio";
 import {
   CORPUS, STEPS_PER_BAR, TONE_NAMES, alignLyrics, chordAt, chordMidi, clampToBars, isSong, keyName,
@@ -191,6 +192,24 @@ export function App() {
             aria-label="Song title"
             onChange={(e) => setSongState({ ...song, title: e.target.value })}
           />
+          <div className="actions">
+            <div className="group">
+              <button type="button" onClick={undo} disabled={!past.current.length} title="Undo (⌘Z)">Undo</button>
+              <button type="button" onClick={redo} disabled={!future.current.length} title="Redo (⇧⌘Z)">Redo</button>
+            </div>
+            <div className="group">
+              <button type="button" onClick={() => download(`${fileName(song)}.mid`, songToMidi(song), "audio/midi")}>
+                Export MIDI
+              </button>
+              <button type="button" onClick={() => download(`${fileName(song)}.json`, JSON.stringify(song, null, 2), "application/json")}>
+                Save
+              </button>
+              <button type="button" onClick={() => fileInput.current?.click()}>Open</button>
+              <input ref={fileInput} type="file" accept=".json,application/json" hidden
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) void openFile(f); e.target.value = ""; }} />
+              <button type="button" onClick={() => { setSong(emptySong()); setSelection({ kind: "slot", start: 0 }); }}>New</button>
+            </div>
+          </div>
         </div>
 
         <div className="toolbar">
@@ -213,13 +232,11 @@ export function App() {
               <option value="minor">minor</option>
               <option value="dorian">Dorian</option>
             </select>
-          </label>
-          <div className="field">
-            <button type="button" aria-label="Transpose down a semitone" title="Transpose down a semitone ([)"
+            <button type="button" className="icon" aria-label="Transpose down a semitone" title="Transpose down a semitone ([)"
               onClick={() => setSong(transpose(song, -1))}>▼</button>
-            <button type="button" aria-label="Transpose up a semitone" title="Transpose up a semitone (])"
+            <button type="button" className="icon" aria-label="Transpose up a semitone" title="Transpose up a semitone (])"
               onClick={() => setSong(transpose(song, 1))}>▲</button>
-          </div>
+          </label>
           <label className="field">
             <span>Capo</span>
             <select value={song.capo ?? 0} onChange={(e) => setSong({ ...song, capo: Number(e.target.value) })}>
@@ -244,22 +261,6 @@ export function App() {
             <button type="button" aria-label="Add a bar" disabled={song.bars >= 64}
               onClick={() => setSong({ ...song, bars: song.bars + 1 })}>+</button>
           </div>
-          <div className="field">
-            <button type="button" onClick={undo} disabled={!past.current.length} title="Undo (⌘Z)">Undo</button>
-            <button type="button" onClick={redo} disabled={!future.current.length} title="Redo (⇧⌘Z)">Redo</button>
-          </div>
-          <div className="field">
-            <button type="button" onClick={() => download(`${fileName(song)}.mid`, songToMidi(song), "audio/midi")}>
-              Export MIDI
-            </button>
-            <button type="button" onClick={() => download(`${fileName(song)}.json`, JSON.stringify(song, null, 2), "application/json")}>
-              Save
-            </button>
-            <button type="button" onClick={() => fileInput.current?.click()}>Open</button>
-            <input ref={fileInput} type="file" accept=".json,application/json" hidden
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) void openFile(f); e.target.value = ""; }} />
-            <button type="button" onClick={() => { setSong(emptySong()); setSelection({ kind: "slot", start: 0 }); }}>New</button>
-          </div>
         </div>
       </header>
       {fileError ? <p className="file-error" role="alert">{fileError} <button type="button" onClick={() => setFileError(null)}>Dismiss</button></p> : null}
@@ -268,8 +269,8 @@ export function App() {
         <aside className="side">
           <div className="side-head">
             <h2>
-              Chords in {keyName(song.tonic, song.mode)}
-              {song.capo ? <span className="capo-note">capo {song.capo}: play {keyName(shapeTonic(song.tonic, song.capo), song.mode)} shapes</span> : null}
+              Chords in <Music text={keyName(song.tonic, song.mode)} />
+              {song.capo ? <span className="capo-note">capo {song.capo}: play <Music text={keyName(shapeTonic(song.tonic, song.capo), song.mode)} /> shapes</span> : null}
             </h2>
             <div className="toggles">
               <label><input type="checkbox" checked={sevenths} onChange={(e) => setSevenths(e.target.checked)} /> 7ths</label>
@@ -291,7 +292,7 @@ export function App() {
           </p>
           <Palette mode={song.mode} tonic={shapeTonic(song.tonic, song.capo ?? 0)} sevenths={sevenths} onPick={pickChord} />
           <div className="legend">
-            <h3>Colors</h3>
+            <h3>Legend</h3>
             <p>Warm is home, cool is tension.</p>
             <div className="legend-row">
               {[1, 3, 5, 2, 4, 6, 7].map((d) => (
