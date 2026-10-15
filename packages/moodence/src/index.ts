@@ -12,3 +12,4 @@ export * from "./song";
 export * from "./tones";
 export * from "./midi";
 export * from "./transpose";
+export * from "./feel";

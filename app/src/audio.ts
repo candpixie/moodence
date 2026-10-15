@@ -51,6 +51,20 @@ export async function preview(midis: number[], velocity = 0.7): Promise<void> {
   piano?.triggerAttackRelease(midis.map(freq), 0.6, undefined, velocity);
 }
 
+/* True once the browser has let audio start (after the first click or key).
+   Hover previews check this so they never queue up sound before that. */
+export function audioReady(): boolean {
+  return piano !== null && Tone.getContext().state === "running";
+}
+
+/* Play the move into a chord: the previous chord, then this one. */
+export async function previewMove(from: number[] | null, to: number[]): Promise<void> {
+  await ensureAudio();
+  const now = Tone.now();
+  if (from) piano?.triggerAttackRelease(from.map(freq), 0.45, now, 0.6);
+  piano?.triggerAttackRelease(to.map(freq), 0.7, from ? now + 0.5 : now, 0.7);
+}
+
 /* Schedule the whole song on the transport as a loop. Called on every play,
    so edits made while stopped are always what you hear. */
 export async function play(song: Song): Promise<void> {

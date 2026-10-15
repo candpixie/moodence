@@ -71,6 +71,7 @@ pnpm examples   # runs every script in examples/
 | `stats` | `estimateKey`, `romanize`, `countTransitions`, `nextChords` |
 | `tones` | `syllabify`, `checkTones`, `alignLyrics`, `suggestLyricFixes`, `applyLyricFix` (Cantonese, from cantojam) |
 | `transpose` | `transpose` (songs, no octave jumps), `transposeProgression` (chord sheets, re-spelled by key), `capoShapes`, `soundingChords` |
+| `feel` | `chordFeel` (a feel word per chord), `commonNext` (hand-written next-chord hints), `STARTERS` (progressions per mode) |
 | `midi` | `songToMidi` (melody + chord tracks, lyric meta events) |
 | `song` | The editor's JSON song model and editing helpers |
 
@@ -83,6 +84,8 @@ Conventions: pitch classes are `0..11` with C = 0. Chords are stored relative to
 - Melody and chords in scale degrees. Changing the key, or ▼/▲ (`[` / `]`), transposes everything.
 - Capo setting: chord names switch to the shapes to play, the sound stays the same.
 - Chord palette per key: diatonic, borrowed from the parallel mode, secondary dominants, sus and 7th colors.
+- Each chord shows a feel word (home, lifting, wants home). Hover plays the move from the previous chord. Common next chords are outlined, the rest fade but stay clickable.
+- Starter progressions per mode drop in at the current spot as normal, editable chords.
 - Degree colors by stability: 1, 3, 5 warm, 2, 4, 6, 7 cool. Borrowed chords are hatched.
 - Melody guides tint the rows that are chord tones under each chord.
 - Lyrics land one syllable per note. Cantonese lines are checked against the melody, and clashes get corpus words that fit the notes (cantojam's word finder).

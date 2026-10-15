@@ -8,7 +8,9 @@ import { ROWS, newId } from "../song";
 import { preview } from "../audio";
 import { Music } from "./Music";
 
-export const CELL = 16;
+// Step width fits the grid to the panel, but never below MIN_CELL (then it scrolls).
+const MIN_CELL = 14;
+const MAX_CELL = 32;
 export const ROW_H = 26;
 const CHORD_H = 52;
 const EDGE = 7; // px at a block's right edge that resizes instead of moving
@@ -41,6 +43,16 @@ const degVar = (deg: number) => `var(--d${deg})`;
 
 export function Editor({ song, lyrics, guides, selection, playhead, onSelect, onChange }: Props) {
   const steps = song.bars * STEPS_PER_BAR;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState(0);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setFit(el.clientWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const CELL = Math.max(MIN_CELL, Math.min(MAX_CELL, Math.floor(fit / steps) || MIN_CELL));
   const width = steps * CELL;
   const gridRef = useRef<HTMLDivElement>(null);
   const laneRef = useRef<HTMLDivElement>(null);
@@ -49,7 +61,6 @@ export function Editor({ song, lyrics, guides, selection, playhead, onSelect, on
   const dragRef = useRef<Drag | null>(null);
   const [drag, setDragState] = useState<Drag | null>(null);
   const setDrag = (d: Drag | null) => { dragRef.current = d; setDragState(d); };
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Keep the playhead in view while playing.
   useEffect(() => {
@@ -57,7 +68,7 @@ export function Editor({ song, lyrics, guides, selection, playhead, onSelect, on
     if (!el || playhead === null) return;
     const x = playhead * CELL;
     if (x < el.scrollLeft || x > el.scrollLeft + el.clientWidth - 40) el.scrollLeft = Math.max(0, x - 40);
-  }, [playhead]);
+  }, [playhead, CELL]);
 
   const notes = drag?.kind === "note"
     ? placeNote(song.notes, drag.note)

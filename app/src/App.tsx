@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Editor, type Selection } from "./components/Editor";
 import { Palette } from "./components/Palette";
+import { Starters } from "./components/Starters";
 import { LyricFixes } from "./components/LyricFixes";
 import { Music } from "./components/Music";
-import { play, playheadStep, preview, stop } from "./audio";
+import { audioReady, ensureAudio, play, playheadStep, previewMove, stop } from "./audio";
 import {
   CORPUS, STEPS_PER_BAR, TONE_NAMES, alignLyrics, chordAt, chordMidi, clampToBars, isSong, keyName,
-  pitchName, placeChord, shapeTonic, songToMidi, transpose, type ChordSpec, type Mode, type Song,
+  pitchName, placeChord, shapeTonic, songToMidi, transpose, type ChordSpec, type Mode, type Song, type Starter,
 } from "moodence";
 import { demoSong, emptySong, loadStored, newId, store } from "./song";
 
@@ -20,6 +21,17 @@ function download(name: string, data: BlobPart, type: string) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+/* The first empty half bar, where a picked chord lands when nothing is selected. */
+function firstEmpty(song: Song): number | null {
+  for (let s = 0; s < song.bars * STEPS_PER_BAR; s += STEPS_PER_BAR / 2) {
+    if (!chordAt(song.chords, s)) return s;
+  }
+  return null;
+}
+
+const specOf = (spec: ChordSpec): ChordSpec =>
+  ({ deg: spec.deg, acc: spec.acc, quality: spec.quality, seventh: spec.seventh, ...(spec.label ? { label: spec.label } : {}) });
 
 const fileName = (song: Song) =>
   (song.title.trim() || "moodence").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").toLowerCase() || "moodence";
@@ -65,6 +77,17 @@ export function App() {
   }, []);
 
   useEffect(() => store(song), [song]);
+  // Browsers only allow sound after a click or key, so wake audio on the
+  // first one. Then hovering a chord can play it right away.
+  useEffect(() => {
+    const wake = () => void ensureAudio();
+    window.addEventListener("pointerdown", wake, { once: true });
+    window.addEventListener("keydown", wake, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", wake);
+      window.removeEventListener("keydown", wake);
+    };
+  }, []);
   const songRef = useRef(song);
   songRef.current = song;
 
@@ -105,10 +128,28 @@ export function App() {
 
   // ---- chords
 
+  // Where the next pick goes, and the chord just before it. The palette uses
+  // that chord to light up common next moves and to play the move on hover.
+  const anchor = selection?.kind === "chord"
+    ? song.chords.find((c) => c.id === selection.id)?.start ?? null
+    : selection?.kind === "slot" ? selection.start : firstEmpty(song);
+  const prevChord = useMemo(() => {
+    if (anchor === null) return null;
+    const before = song.chords.filter((c) => c.start < anchor);
+    return before.length ? before.reduce((a, b) => (b.start > a.start ? b : a)) : null;
+  }, [song.chords, anchor]);
+
+  const hearMove = (spec: ChordSpec) =>
+    previewMove(prevChord ? chordMidi(prevChord, song.mode, song.tonic) : null, chordMidi(spec, song.mode, song.tonic));
+
+  const audition = (spec: ChordSpec) => {
+    if (!playing && audioReady()) void hearMove(spec);
+  };
+
   const pickChord = (spec: ChordSpec) => {
     const end = song.bars * STEPS_PER_BAR;
-    const base = { deg: spec.deg, acc: spec.acc, quality: spec.quality, seventh: spec.seventh, ...(spec.label ? { label: spec.label } : {}) };
-    void preview(chordMidi(spec, song.mode, song.tonic));
+    const base = specOf(spec);
+    if (!playing) void hearMove(spec);
 
     if (selection?.kind === "chord") {
       const target = song.chords.find((c) => c.id === selection.id);
@@ -118,17 +159,30 @@ export function App() {
         return;
       }
     }
-    let start: number | null = selection?.kind === "slot" ? selection.start : null;
-    if (start === null) {
-      for (let s = 0; s < end; s += STEPS_PER_BAR / 2) {
-        if (!chordAt(song.chords, s)) { start = s; break; }
-      }
-    }
+    const start = selection?.kind === "slot" ? selection.start : firstEmpty(song);
     if (start === null) return;
     const len = Math.min(chordLen, end - start);
     setSong({ ...song, chords: placeChord(song.chords, { id: newId(), start, len, ...base }) });
     const next = start + len;
     setSelection(next < end ? { kind: "slot", start: next } : null);
+  };
+
+  // Drop a starter in at the current spot, one chord per Length, adding bars if
+  // it runs past the end. It's one undo step, and every chord stays editable.
+  const pickStarter = (starter: Starter) => {
+    const start = anchor ?? 0;
+    const needed = Math.ceil((start + starter.chords.length * chordLen) / STEPS_PER_BAR);
+    const bars = Math.min(64, Math.max(song.bars, needed));
+    const end = bars * STEPS_PER_BAR;
+    let chords = song.chords;
+    let at = start;
+    for (const spec of starter.chords) {
+      if (at >= end) break;
+      chords = placeChord(chords, { id: newId(), start: at, len: Math.min(chordLen, end - at), ...specOf(spec) });
+      at += chordLen;
+    }
+    setSong({ ...song, bars, chords });
+    setSelection(at < end ? { kind: "slot", start: at } : null);
   };
 
   const deleteSelected = useCallback(() => {
@@ -289,8 +343,11 @@ export function App() {
             {selection?.kind === "chord"
               ? "Pick a chord to replace the selected one. Delete removes it."
               : "Click a slot in the chord lane, then pick a chord. The next slot is selected for you."}
+            {prevChord ? " Brighter chords usually come next. Hover to hear the move." : " Hover a chord to hear it."}
           </p>
-          <Palette mode={song.mode} tonic={shapeTonic(song.tonic, song.capo ?? 0)} sevenths={sevenths} onPick={pickChord} />
+          <Palette mode={song.mode} tonic={shapeTonic(song.tonic, song.capo ?? 0)} sevenths={sevenths}
+            prev={prevChord} onPick={pickChord} onAudition={audition} />
+          <Starters mode={song.mode} onPick={pickStarter} />
           <div className="legend">
             <h3>Legend</h3>
             <p>Warm is home, cool is tension.</p>

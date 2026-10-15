@@ -148,6 +148,22 @@ a { color: inherit; }
 }
 .pchord, .chord, .note { text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18); }
 .chord-symbol { opacity: 0.92; }
+.chord-feel { font-size: 10.5px; opacity: 0.9; margin-top: 2px; line-height: 1.1; }
+.pchord { height: auto; min-height: 50px; transition: opacity 0.15s, box-shadow 0.15s; }
+.pchord.is-common { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px color-mix(in srgb, var(--c) 55%, transparent); }
+.pchord.is-rare { opacity: 0.55; }
+.pchord.is-rare:hover, .pchord.is-rare:focus-visible { opacity: 1; }
+
+.starters h3 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 16px 0 6px; font-weight: 600;
+}
+.starter-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 6px; }
+.starter {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; height: auto;
+  padding: 6px 9px; text-align: left; line-height: 1.2;
+}
+.starter b { font-size: 13px; }
+.starter span { font-size: 11px; color: var(--muted); }
 
 .legend p { color: var(--muted); font-size: 12.5px; margin: 4px 0; }
 .legend-row { display: flex; gap: 4px; margin: 6px 0; }
