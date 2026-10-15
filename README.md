@@ -71,7 +71,7 @@ pnpm examples   # runs every script in examples/
 | `stats` | `estimateKey`, `romanize`, `countTransitions`, `nextChords` |
 | `tones` | `syllabify`, `checkTones`, `alignLyrics`, `suggestLyricFixes`, `applyLyricFix` (Cantonese, from cantojam) |
 | `transpose` | `transpose` (songs, no octave jumps), `transposeProgression` (chord sheets, re-spelled by key), `capoShapes`, `soundingChords` |
-| `feel` | `chordFeel` (a feel word per chord), `commonNext` (hand-written next-chord hints), `STARTERS` (progressions per mode) |
+| `feel` | `chordFeel` (a feel word per chord), `commonNext` (hand-written next-chord hints), `STARTERS` (the progression library) |
 | `midi` | `songToMidi` (melody + chord tracks, lyric meta events) |
 | `song` | The editor's JSON song model and editing helpers |
 
@@ -81,6 +81,7 @@ Conventions: pitch classes are `0..11` with C = 0. Chords are stored relative to
 
 `app/`, a Vite + React app built on the library.
 
+- Two views on one song. Jam: a library of progressions to load and loop, then click any chord in the loop to swap it, with options that fit listed first. Write: the full melody and chord grid.
 - Melody and chords in scale degrees. Changing the key, or ▼/▲ (`[` / `]`), transposes everything.
 - Capo setting: chord names switch to the shapes to play, the sound stays the same.
 - Chord palette per key: diatonic, borrowed from the parallel mode, secondary dominants, sus and 7th colors.

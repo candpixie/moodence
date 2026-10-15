@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Editor, type Selection } from "./components/Editor";
 import { Palette } from "./components/Palette";
 import { Starters } from "./components/Starters";
+import { Jam } from "./components/Jam";
 import { LyricFixes } from "./components/LyricFixes";
 import { Music } from "./components/Music";
 import { audioReady, ensureAudio, play, playheadStep, previewMove, stop } from "./audio";
@@ -36,7 +37,18 @@ const specOf = (spec: ChordSpec): ChordSpec =>
 const fileName = (song: Song) =>
   (song.title.trim() || "moodence").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").toLowerCase() || "moodence";
 
+type View = "jam" | "write";
+const VIEW_KEY = "moodence.view";
+const loadView = (): View => {
+  try { return localStorage.getItem(VIEW_KEY) === "write" ? "write" : "jam"; } catch { return "jam"; }
+};
+
 export function App() {
+  const [view, setViewState] = useState<View>(loadView);
+  const setView = (v: View) => {
+    setViewState(v);
+    try { localStorage.setItem(VIEW_KEY, v); } catch { /* storage off */ }
+  };
   const [song, setSongState] = useState<Song>(() => loadStored() ?? demoSong());
   const past = useRef<Song[]>([]);
   const future = useRef<Song[]>([]);
@@ -185,6 +197,54 @@ export function App() {
     setSelection(at < end ? { kind: "slot", start: at } : null);
   };
 
+  // ---- jam
+
+  const sortedChords = () => [...song.chords].sort((a, b) => a.start - b.start);
+
+  const loadStarter = (starter: Starter) => {
+    const chords = starter.chords.map((spec, i) => ({ id: newId(), start: i * STEPS_PER_BAR, len: STEPS_PER_BAR, ...specOf(spec) }));
+    const next = clampToBars({ ...song, mode: starter.mode, bars: Math.max(1, chords.length), chords });
+    setSong(next);
+    if (!playing) {
+      void play(next);
+      setPlaying(true);
+    }
+  };
+
+  const swapChord = (index: number, spec: ChordSpec) => {
+    const target = sortedChords()[index];
+    if (!target) return;
+    const { label: _old, ...rest } = target;
+    setSong({ ...song, chords: song.chords.map((c) => (c.id === target.id ? { ...rest, ...specOf(spec) } : c)) });
+    if (!playing) void hearMoveFrom(sortedChords()[index - 1] ?? null, spec);
+  };
+
+  const addChord = () => {
+    const chords = sortedChords();
+    const last = chords[chords.length - 1];
+    const start = last ? last.start + last.len : 0;
+    const bars = Math.min(64, Math.max(song.bars, Math.ceil((start + STEPS_PER_BAR) / STEPS_PER_BAR)));
+    setSong({ ...song, bars, chords: [...song.chords, { id: newId(), start, len: STEPS_PER_BAR, deg: 1, acc: 0, quality: null, seventh: sevenths }] });
+  };
+
+  const removeChord = (index: number) => {
+    const target = sortedChords()[index];
+    if (!target) return;
+    const end = target.start + target.len;
+    const shift = <T extends { start: number }>(items: T[]) =>
+      items.map((i) => (i.start >= end ? { ...i, start: i.start - target.len } : i));
+    const notes = shift(song.notes.filter((n) => n.start < target.start || n.start >= end));
+    const bars = Math.max(1, song.bars - Math.round(target.len / STEPS_PER_BAR));
+    setSong(clampToBars({ ...song, bars, notes, chords: shift(song.chords.filter((c) => c.id !== target.id)) }));
+  };
+
+  const hearMoveFrom = (prev: ChordSpec | null, spec: ChordSpec) =>
+    previewMove(prev ? chordMidi(prev, song.mode, song.tonic) : null, chordMidi(spec, song.mode, song.tonic));
+
+  const jamAudition = (prev: ChordSpec | null, spec: ChordSpec) => {
+    if (!playing && audioReady()) void hearMoveFrom(prev, spec);
+  };
+
   const deleteSelected = useCallback(() => {
     if (selection?.kind !== "chord") return;
     setSong({ ...song, chords: song.chords.filter((c) => c.id !== selection.id) });
@@ -240,6 +300,10 @@ export function App() {
       <header className="top">
         <div className="brand">
           <h1>Moodence</h1>
+          <div className="tabs view-tabs" role="tablist" aria-label="View">
+            <button type="button" role="tab" aria-selected={view === "jam"} className={view === "jam" ? "is-on" : ""} onClick={() => setView("jam")}>Jam</button>
+            <button type="button" role="tab" aria-selected={view === "write"} className={view === "write" ? "is-on" : ""} onClick={() => setView("write")}>Write</button>
+          </div>
           <input
             className="title"
             value={song.title}
@@ -319,6 +383,20 @@ export function App() {
       </header>
       {fileError ? <p className="file-error" role="alert">{fileError} <button type="button" onClick={() => setFileError(null)}>Dismiss</button></p> : null}
 
+      {view === "jam" ? (
+        <Jam
+          song={song}
+          sevenths={sevenths}
+          playing={playing}
+          playhead={playhead}
+          onLoad={loadStarter}
+          onSwap={swapChord}
+          onAdd={addChord}
+          onRemove={removeChord}
+          onAudition={jamAudition}
+          onTogglePlay={() => void togglePlay()}
+        />
+      ) : (
       <main className="workspace">
         <aside className="side">
           <div className="side-head">
@@ -417,6 +495,7 @@ export function App() {
           </div>
         </section>
       </main>
+      )}
     </div>
   );
 }

@@ -70,6 +70,8 @@ export async function previewMove(from: number[] | null, to: number[]): Promise<
 export async function play(song: Song): Promise<void> {
   await ensureAudio();
   const transport = Tone.getTransport();
+  // Restarting after an edit keeps the loop where it was, so a swap is heard in place.
+  const resumeAt = transport.state === "started" ? transport.seconds : 0;
   transport.stop();
   transport.cancel();
   transport.bpm.value = song.bpm;
@@ -91,7 +93,7 @@ export async function play(song: Song): Promise<void> {
   transport.loop = true;
   transport.loopStart = 0;
   transport.loopEnd = song.bars * STEPS_PER_BAR * step;
-  transport.start("+0.05");
+  transport.start("+0.05", resumeAt % (transport.loopEnd as number));
 }
 
 export function stop(): void {
